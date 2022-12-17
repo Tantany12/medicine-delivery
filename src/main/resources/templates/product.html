@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <th:block th:replace="components/header :: header"></th:block>
+    <title th:text="${product.genericName} + ' ' + product">Product Name</title>
+  </head>
+  <body>
+    <div class="site-wrap">
+      <nav th:replace="fragments/new_navbar :: navbar"></nav>
+      <div class="bg-light py-3">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <a
+                  th:href="@{/store}">Store</a> <span class="mx-2 mb-0">/</span> <strong class="text-black"><span th:text="${product.brandName} + ', ' + ${product.dosageStrength}">Ibuprofen Tablets, 200mg</span></strong></div>
+            </div>
+          </div>
+      </div>
+      <!--  -->
+      <div class="site-section">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-5 mr-auto">
+              <div class="border text-center">
+                <img th:src="'../uploads/' + ${product.url}" th:alt="${product.brandName}" class="img-fluid p-5">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h2 class="text-black" th:text="${product.brandName} + ', ' + ${product.dosageStrength}">Ibuprofen Tablets, 200mg</h2>
+              <p th:text="${product.genericName} + ' - ' + ${product.form}">Generic - Form</p>
+              <p th:text="${product.description}">Description</p>
+
+              <p><strong class="text-primary h4" th:text="₱ + ${product.price}">$55.00</strong></p>
+
+              <div class="mb-5">
+                <div class="input-group mb-3" style="max-width: 220px;">
+                  <div class="input-group-prepend">
+                    <button class="btn btn-outline-primary js-btn-minus" type="button">&minus;</button>
+                  </div>
+                  <input type="text" id="quantity" name="quantity" class="form-control text-center" value="1" placeholder=""
+                    aria-label="Example text with button addon" aria-describedby="button-addon1">
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-primary js-btn-plus" type="button">&plus;</button>
+                  </div>
+                </div>      
+                <span class="input-group-btn">
+                    <p style="font-size: 1rem;"><th:block th:text="${product.stock}">1</th:block> available left</p>
+                </span>
+              </div>
+              <p style="display: inline;"><a onclick="buy()" class="buy-now btn btn-sm height-auto px-4 py-3 btn-primary">Buy</a></p>
+              <p style="display: inline;"><a onclick="addToCart()" class="buy-now btn btn-sm height-auto px-4 py-3 btn-primary">Add To Cart</a></p>
+
+              <th:block th:if="${#request.userPrincipal} != null">
+                <div th:if="${#request.userPrincipal.principal.getRole} == 'pharmacist'" class="w-100 mt-2">
+                  <p>Options: </p>
+                  <p style="display: inline;"><a onclick="edit()" class="buy-now btn btn-sm height-auto px-4 py-3 btn-outline-primary">Edit Product</a></p>
+                  <p style="display: inline;"><a onclick="changeImage()" class="buy-now btn btn-sm height-auto px-4 py-3 btn-outline-primary">Change Image</a></p>
+                </div>
+              </th:block>
+
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Success!</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="exampleModalBody">
+            Product added to cart!
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block th:if="${#request.userPrincipal} != null">
+      <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form th:action="@{/upload-image?id=} + ${product.id}" method="POST" enctype="multipart/form-data">
+              <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Change Image</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body" id="imageModalBody">
+                  <div class="form-group">
+                    <h4>Select new image</h4>
+                    <input type="file" accept="image/*" name="image" class="form-control-file" onchange="loadFile(event)">
+                    <div class="text-center m-0 p-0 mt-2">
+                      <img id="output" style="width: 400px;"/>
+                    </div>
+                    <script>
+                      var loadFile = function(event) {
+                        var output = document.getElementById('output');
+                        output.src = URL.createObjectURL(event.target.files[0]);
+                        output.onload = function() {
+                          URL.revokeObjectURL(output.src) // free memory
+                        }
+                      };
+                    </script>
+                    
+                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div th:if="${#request.userPrincipal.principal.getRole} == 'pharmacist'" class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <form th:action="@{/edit-product?product=} + ${product.id}" method="POST" th:object="${product}">
+              <div class="modal-body" id="editModalBody">
+                <div class="form-group text-left">
+                    <label for="brand">Brand name</label>
+                    <input th:field="*{brandName}" th:value="${product.brandName}" type="text" class="form-control form-control-sm" id="brand" placeholder="Enter brand name" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="generic">Generic name</label>
+                    <input th:field="*{genericName}" th:value="${product.genericName}" type="text" class="form-control form-control-sm" id="generic" placeholder="Enter generic name" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="dosage">Dosage Strength</label>
+                    <input th:field="*{dosageStrength}" th:value="${product.dosageStrength}" type="text" class="form-control form-control-sm" id="dosage" placeholder="Enter dosage strength" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="form">Form</label>
+                    <input th:field="*{form}" th:value="${product.form}" type="text" class="form-control form-control-sm" id="form" placeholder="Enter form" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="description">Description</label>
+                    <input th:field="*{description}" th:value="${product.description}" type="text" class="form-control form-control-sm" id="description" placeholder="Enter description" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="price">Price</label>
+                    <input th:field="*{price}" th:value="${product.price}" type="number" class="form-control form-control-sm" id="price" placeholder="Enter price" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="stock">Stock</label>
+                    <input th:field="*{stock}" th:value="${product.stock}" type="number" class="form-control form-control-sm" id="stock" placeholder="Enter stock" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Confirm Changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </div>
+
+  <script src="/js/jquery-3.3.1.min.js"></script>
+  <script src="/js/jquery-ui.js"></script>
+  <script src="/js/popper.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="/js/owl.carousel.min.js"></script>
+  <script src="/js/jquery.magnific-popup.min.js"></script>
+  <script src="/js/aos.js"></script>
+
+  <script src="/js/main.js"></script>
+  </body>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+      function addToCart(){
+
+        var stocks = '[[${product.stock}]]';
+        if(stocks == 0){
+          $("#exampleModalLabel").text("No available stocks!");
+          $("#exampleModalBody").text("No stocks available for this product!");
+          $('#exampleModal').modal({ show: true });
+          return;
+        }
+
+      var product_id = '[[${product.id}]]';
+      var quantity = $("#quantity").val();
+      var parameter = "?prod_id=" + product_id + "&" + "quantity=" + quantity;
+      $.get("/add-to-cart" + parameter, function(data){
+        if(data == true){
+          $("#exampleModalLabel").text("Success!");
+          $("#exampleModalBody").text("Product added to cart!");
+        }else{
+          $("#exampleModalLabel").text("Login required!");
+          $("#exampleModalBody").text("Log in first as buyer to add in the cart!");
+        }
+        $('#exampleModal').modal({ show: true });
+      });
+    }
+
+    function buy(){
+
+      var stocks = '[[${product.stock}]]';
+      if(stocks == 0){
+        $("#exampleModalLabel").text("No available stocks!");
+        $("#exampleModalBody").text("No stocks available for this product!");
+        $('#exampleModal').modal({ show: true });
+        return;
+      }
+
+      var product_id = '[[${product.id}]]';
+      var quantity = $("#quantity").val();
+      var parameter = "?prod_id=" + product_id + "&" + "quantity=" + quantity;
+      $.get("/add-to-cart" + parameter, function(data){
+        if(data == true){
+          window.location.assign("/cart");
+        }else{
+          $("#exampleModalLabel").text("Login required!");
+          $("#exampleModalBody").text("Log in first as buyer to add in the cart!");
+          $('#exampleModal').modal({ show: true });
+        }
+      });
+    }
+
+    function edit(){
+      $('#editModal').modal({ show: true });
+    }
+
+    function changeImage(){
+      $('#imageModal').modal({ show: true });
+    }
+
+    $(document).ready(function () {
+      // $(".quantity-right-plus").click(function (e) {
+      $(".js-btn-plus").click(function (e) {
+        // Stop acting like a button
+        e.preventDefault();
+        // Get the field name
+        var quantity = parseInt($("#quantity").val());
+
+        if(quantity.toString() == "NaN" || quantity <= 0){
+            quantity = 0;
+        }
+
+        var maxStock = parseInt('[[${product.stock}]]');
+
+        if(quantity >= maxStock){
+            $("#quantity").val(maxStock);
+        }else{
+            $("#quantity").val(quantity + 1);
+        }
+
+        // Increment
+      });
+
+      // $(".quantity-left-minus").click(function (e) {
+      $(".js-btn-minus").click(function (e) {
+        // Stop acting like a button
+        e.preventDefault();
+        // Get the field name
+        var quantity = parseInt($("#quantity").val());
+
+        // If is not undefined
+
+        // Increment
+        if (quantity > 1) {
+          $("#quantity").val(quantity - 1);
+        }else{
+            $("#quantity").val(1);
+        }
+      });
+
+      $("#quantity").change(function (e){
+        var quantity = parseInt($("#quantity").val());
+        var maxStock = parseInt('[[${product.stock}]]');
+
+        if(quantity > maxStock){
+            $("#quantity").val(maxStock);
+        }else if (quantity < 1){
+            $("#quantity").val(1);
+        }
+      });
+    });    
+   /*]]>*/
+  </script>
+</html>
